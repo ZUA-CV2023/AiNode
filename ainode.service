@@ -1,0 +1,18 @@
+# File path: /etc/systemd/system/ainode.service
+# sudo systemctl daemon-reload
+# sudo systemctl start ainode
+# sudo systemctl enable ainode
+# sudo systemctl status ainode
+[Unit]
+Description=One API Service
+After=network.target
+
+[Service]
+User=ubuntu  # 注意修改用户名
+WorkingDirectory=/path/to/ainode  # 注意修改路径
+ExecStart=/path/to/ainode/ainode --port 3000 --log-dir /path/to/ainode/logs  # 注意修改路径和端口号
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
