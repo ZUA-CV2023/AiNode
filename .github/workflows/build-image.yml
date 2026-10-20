@@ -33,6 +33,59 @@ jobs:
           fetch-depth: 1
 
       # ------------------------------------------------------------------
+      # 前置自检：把「secret 没填」「格式不对」「域名解析不了」这三类问题
+      # 在登录之前就说清楚，而不是丢一个看不懂的 DNS / daemon 报错。
+      # 只打印长度，不打印值本身。
+      # ------------------------------------------------------------------
+      - name: Preflight - validate secrets
+        env:
+          REG: ${{ secrets.ACR_REGISTRY }}
+          NS: ${{ secrets.ACR_NAMESPACE }}
+          USER: ${{ secrets.ACR_USERNAME }}
+          PASS: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          set -uo pipefail
+          fail=0
+
+          [ -n "$REG"  ] || { echo "::error::ACR_REGISTRY 没有设置"; fail=1; }
+          [ -n "$NS"   ] || { echo "::error::ACR_NAMESPACE 没有设置"; fail=1; }
+          [ -n "$USER" ] || { echo "::error::ACR_USERNAME 没有设置"; fail=1; }
+          [ -n "$PASS" ] || { echo "::error::ACR_PASSWORD 没有设置"; fail=1; }
+          [ "$fail" -eq 0 ] || exit 1
+
+          echo "ACR_REGISTRY 字符数 : ${#REG}"
+          echo "ACR_NAMESPACE       : $NS"
+          echo "ACR_USERNAME 字符数 : ${#USER}"
+          echo "ACR_PASSWORD 字符数 : ${#PASS}"
+
+          # 末尾/中间有空白 —— 复制时带上换行是最常见的原因
+          case "$REG" in
+            *[[:space:]]*)
+              echo "::error::ACR_REGISTRY 含有空白字符（换行或空格）。多半是复制时带上了，请用 ACR 页面的「复制」按钮重新复制"
+              fail=1 ;;
+            https://*|http://*)
+              echo "::error::ACR_REGISTRY 不要带 http:// 或 https:// 前缀，只填域名"
+              fail=1 ;;
+            */*)
+              echo "::error::ACR_REGISTRY 不要带路径（比如 /ainode/ainode），只填域名"
+              fail=1 ;;
+          esac
+
+          if ! printf '%s' "$REG" | grep -Eq '^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$'; then
+            echo "::error::ACR_REGISTRY 含非法字符（只允许小写字母、数字、点、连字符）"
+            fail=1
+          fi
+          [ "$fail" -eq 0 ] || exit 1
+
+          # 真正解析一次，域名拼错会在这里暴露
+          if ! getent hosts "$REG" > /dev/null 2>&1; then
+            echo "::error::无法解析 $REG。请确认：(1) 域名是否拼写正确；(2) 是否漏了某一段。可在 ACR 仓库详情页点「复制」核对"
+            exit 1
+          fi
+
+          echo "✔ secrets 格式与域名解析检查通过"
+
+      # ------------------------------------------------------------------
       # 版本号有两个形态，不能混：
       #   app_version —— 写进 VERSION，编入二进制和前端，含 '+'
       #   tag_version —— Docker 镜像标签，只允许 [a-zA-Z0-9._-]，'+' 换成 '_'
@@ -82,6 +135,15 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
+
+          # ⚠️ 阿里云 ACR 个人版不支持 OCI image index 里的
+          #    application/vnd.oci.empty.v1+json（buildx 附加的 attestation 清单），
+          #    推送会被拒绝：denied: unknown manifest class for
+          #    application/vnd.oci.empty.v1+json
+          #    关掉这两个附加产物，只推送纯镜像清单。
+          provenance: false
+          sbom: false
+
           # 国内加速：Dockerfile 里这两个 ARG 默认走上游源，这里覆盖成镜像站
           build-args: |
             GOPROXY=https://goproxy.cn,direct
@@ -89,8 +151,9 @@ jobs:
           tags: |
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag_version }}
             ${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
+          # ignore-error=true：缓存服务偶发网络错误，不该让整个构建失败
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,ignore-error=true
           labels: |
             org.opencontainers.image.title=AiNode
             org.opencontainers.image.version=${{ steps.version.outputs.app_version }}
