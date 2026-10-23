@@ -6,11 +6,18 @@
     <meta name="google" content="notranslate" />
 
     <!-- Primary Meta Tags -->
-    <title>New API</title>
-    <meta name="title" content="New API" />
+    <!--
+      Modified by AiNode fork (AGPLv3 §7(c)): static title and meta title changed
+      from "New API" to "AiNode" so the browser tab does not flash the upstream
+      name before React sets document.title from /api/status. The runtime
+      override in src/main.tsx is unchanged, so renaming in the admin settings
+      still takes effect after load.
+    -->
+    <title>AiNode</title>
+    <meta name="title" content="AiNode" />
     <meta
       name="description"
-      content="Unified AI API gateway and admin dashboard."
+      content="AiNode - Unified AI API gateway and admin dashboard."
     />
 
     <meta name="theme-color" content="#fff" />
