@@ -245,6 +245,57 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 
 ---
 
+## 修改 10:清理源码中的品牌残留
+
+**类型**:修改源码
+**日期**:2026-10-27
+**文件**
+
+- `common/constants.go`
+- `main.go`
+
+**内容**
+
+1. `common/constants.go`:`var SystemName = "New API"` 改为 `"AiNode"`。
+
+   这是数据库里没有 `SystemName` 配置时的兜底默认值,影响启动横幅、浏览器标题、
+   邮件标题、passkey 显示名等。**仅对全新空数据库生效** —— 已有数据库中的值优先,
+   因此不影响当前已上线实例的显示。
+
+2. `main.go`:启动日志 `"New API %s started"` 改为 `"AiNode %s started"`。
+
+3. `main.go`:panic 响应中的问题反馈链接由上游
+   `github.com/Calcium-Ion/new-api` 改为 `github.com/ZUA-CV2023/AiNode`。
+
+4. `main.go`:删除注入进页面 HTML 的品牌注释
+   `<!--Umami QuantumNous-->` 与 `<!--Google Analytics QuantumNous-->`。
+
+**原因**
+
+前三项是面向部署者与客户端的可见文案。第三项会在服务端 panic 时随 500 响应返回。
+
+第四项需要特别说明:这两行注释的写入语句位于 `if os.Getenv(...)` **之外**,
+因此即使未启用 Umami / Google Analytics,也会被替换进 `index.html` 的占位符,
+导致**每个页面的 HTML 源码中都含有上游标识**(右键「查看网页源代码」即可见)。
+
+**影响**
+
+- 前三项仅改文案,不影响逻辑。
+- 第四项删的是 HTML 注释,占位符改为替换成换行符,页面行为不变。
+
+**有意未修改的内容**
+
+以下保留上游标识,因为它们承载**功能语义**而非品牌,修改会造成误解或破坏兼容:
+
+| 位置 | 保留原因 |
+| --- | --- |
+| `constant.ChannelTypeNewAPI` 及渠道类型显示名 `"New API"` | 指「上游是 New API 实例」的渠道类型,是功能标签 |
+| `common/database.go` 的 `one-api.db` | 数据库文件名,改动会导致既有数据无法读取 |
+| 所有 `github.com/QuantumNous/new-api/...` 导入路径 | Go 模块名,改动会使上游同步无法合并 |
+| `LICENSE` / `NOTICE` / 文件版权头 / 页脚署名 | AGPLv3 §7 附加条款要求保留 |
+
+---
+
 ## 新增的本地部署文件
 
 以下文件为本 fork 新增,不属于上游:
@@ -303,3 +354,4 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | 2026-10-19 | — | 修改 1~4、6 |
 | 2026-10-20 | `v1.0.0-rc.43+092982c` | 修改 5、7;首次构建镜像并部署上线,功能实测通过 |
 | 2026-10-20 | 待部署 | 修改 8、9;补齐变更记录,替换品牌资源(AiNode 标志与静态标题) |
+| 2026-10-27 | 待部署 | 修改 10;清理源码品牌残留(默认系统名、启动日志、panic 链接、HTML 注释) |
