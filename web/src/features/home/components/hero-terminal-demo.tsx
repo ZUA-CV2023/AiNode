@@ -20,7 +20,7 @@ import { useState, useEffect, useRef, type ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
-type AccentTone = 'emerald' | 'amber' | 'blue' | 'violet'
+type AccentTone = 'primary'
 
 interface ApiDemoConfig {
   id: string
@@ -44,29 +44,10 @@ const ACCENT_CLASSES: Record<
     badge: string
   }
 > = {
-  emerald: {
-    activeText: 'text-emerald-600 dark:text-emerald-400',
-    activeBorder: 'border-emerald-500 dark:border-emerald-400',
-    badge:
-      'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400',
-  },
-  amber: {
-    activeText: 'text-amber-600 dark:text-amber-400',
-    activeBorder: 'border-amber-500 dark:border-amber-400',
-    badge:
-      'bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400',
-  },
-  blue: {
-    activeText: 'text-blue-600 dark:text-blue-400',
-    activeBorder: 'border-blue-500 dark:border-blue-400',
-    badge:
-      'bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400',
-  },
-  violet: {
-    activeText: 'text-violet-600 dark:text-violet-400',
-    activeBorder: 'border-violet-500 dark:border-violet-400',
-    badge:
-      'bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400',
+  primary: {
+    activeText: 'text-primary',
+    activeBorder: 'border-primary',
+    badge: 'bg-primary/10 text-primary',
   },
 }
 
@@ -92,7 +73,7 @@ const API_DEMOS: ApiDemoConfig[] = [
     responseHighlights: ['<text>', '<tokens>'],
     tokens: 27,
     latency: 142,
-    accent: 'emerald',
+    accent: 'primary',
   },
   {
     id: 'responses',
@@ -110,7 +91,7 @@ const API_DEMOS: ApiDemoConfig[] = [
     responseHighlights: ['<text>', '<tokens>'],
     tokens: 31,
     latency: 168,
-    accent: 'amber',
+    accent: 'primary',
   },
   {
     id: 'claude',
@@ -134,7 +115,7 @@ const API_DEMOS: ApiDemoConfig[] = [
     responseHighlights: ['<text>', '<in>', '<out>'],
     tokens: 29,
     latency: 156,
-    accent: 'blue',
+    accent: 'primary',
   },
   {
     id: 'gemini',
@@ -157,7 +138,7 @@ const API_DEMOS: ApiDemoConfig[] = [
     responseHighlights: ['<text>', '<tokens>'],
     tokens: 25,
     latency: 93,
-    accent: 'violet',
+    accent: 'primary',
   },
 ]
 
@@ -241,7 +222,7 @@ export function HeroTerminalDemo(props: HeroTerminalDemoProps) {
             )
           })}
           <div className='ml-auto flex items-center gap-2 pr-2 sm:pr-3'>
-            <span className='inline-block size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.45)]' />
+            <span className='inline-block size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,132,255,0.45)]' />
             <span className='text-foreground/40 font-mono text-[10px] tracking-wider uppercase'>
               200 ok
             </span>

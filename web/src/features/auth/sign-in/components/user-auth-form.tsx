@@ -363,6 +363,7 @@ export function UserAuthForm({
                   <FormControl>
                     <Input
                       placeholder={t('Enter your username or email')}
+                      className='border-border/70 h-12 rounded-xl bg-white/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
                       {...field}
                     />
                   </FormControl>
@@ -381,6 +382,7 @@ export function UserAuthForm({
                   <FormControl>
                     <PasswordInput
                       placeholder={t('Enter password')}
+                      className='border-border/70 h-12 rounded-xl bg-white/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
                       {...field}
                     />
                   </FormControl>
@@ -398,7 +400,7 @@ export function UserAuthForm({
             {/* Submit Button */}
             <Button
               type='submit'
-              className='mt-2 w-full justify-center gap-2'
+              className='mt-1 h-12 w-full justify-center gap-2 rounded-full bg-gradient-to-r from-[#4facfe] to-[#0f7bff] font-medium text-white shadow-[0_10px_24px_-10px_rgba(15,123,255,0.65)] hover:opacity-95'
               disabled={isLoading || (requiresLegalConsent && !agreedToLegal)}
             >
               {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}

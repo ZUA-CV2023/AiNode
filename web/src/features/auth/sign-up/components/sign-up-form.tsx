@@ -26,6 +26,7 @@ import type { z } from 'zod'
 
 import { Dialog } from '@/components/dialog'
 import { PasswordInput } from '@/components/password-input'
+import { PasswordStrengthMeter } from '@/components/password-strength-meter'
 import { Turnstile } from '@/components/turnstile'
 import { Button } from '@/components/ui/button'
 import {
@@ -99,6 +100,7 @@ export function SignUpForm({
   })
 
   const emailValue = form.watch('email')
+  const passwordValue = form.watch('password')
   const emailVerificationRequired = !!status?.email_verification
   const hasUserAgreement = Boolean(status?.user_agreement_enabled)
   const hasPrivacyPolicy = Boolean(status?.privacy_policy_enabled)
@@ -279,6 +281,7 @@ export function SignUpForm({
                   {...field}
                 />
               </FormControl>
+              <PasswordStrengthMeter password={passwordValue} />
               <FormMessage />
             </FormItem>
           )}

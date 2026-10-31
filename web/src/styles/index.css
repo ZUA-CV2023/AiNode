@@ -545,6 +545,48 @@ For commercial licensing, please contact support@quantumnous.com
   animation: landing-fade-right 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes landing-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dots orbiting the decorative hero core */
+.landing-orbit {
+  animation: landing-orbit var(--orbit-duration, 24s) linear infinite;
+}
+.landing-orbit-reverse {
+  animation: landing-orbit var(--orbit-duration, 24s) linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-orbit,
+  .landing-orbit-reverse {
+    animation: none !important;
+  }
+}
+
+/* Twinkling stars for the auth showcase backdrop */
+@keyframes auth-twinkle {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes auth-twinkle {
+    0%, 100% { opacity: 0.5; }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-animate-fade-up,
   .landing-animate-fade-in,

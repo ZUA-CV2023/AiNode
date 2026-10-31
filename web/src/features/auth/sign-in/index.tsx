@@ -20,6 +20,7 @@ import { Link, useSearch } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 
 import { useStatus } from '@/hooks/use-status'
+import { useSystemConfig } from '@/hooks/use-system-config'
 
 import { AuthLayout } from '../auth-layout'
 import { TermsFooter } from '../components/terms-footer'
@@ -29,36 +30,51 @@ export function SignIn() {
   const { t } = useTranslation()
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
   const { status } = useStatus()
+  const { logo } = useSystemConfig()
+
+  const hasTerms = Boolean(
+    status?.user_agreement_enabled || status?.privacy_policy_enabled
+  )
 
   return (
     <AuthLayout>
-      <div className='w-full space-y-8'>
-        <div className='space-y-2'>
-          <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
+      <div className='flex w-full flex-1 flex-col justify-center'>
+        <div className='flex flex-col items-center'>
+          <div
+            aria-hidden='true'
+            className='flex size-14 items-center justify-center overflow-hidden rounded-2xl ring-1 ring-black/5'
+          >
+            <img src={logo} alt={t('Logo')} className='size-full object-cover' />
+          </div>
+
+          <h2 className='text-foreground mt-4 text-center text-2xl font-semibold tracking-tight'>
             {t('Sign in')}
           </h2>
-          {!status?.self_use_mode_enabled &&
-            status?.register_enabled !== false && (
-              <p className='text-muted-foreground text-left text-sm sm:text-base'>
-                {t("Don't have an account?")}{' '}
-                <Link
-                  to='/sign-up'
-                  className='hover:text-primary font-medium underline underline-offset-4'
-                >
-                  {t('Sign up')}
-                </Link>
-                .
-              </p>
-            )}
+
+          <div className='mt-9 w-full'>
+            <UserAuthForm redirectTo={redirect} />
+          </div>
         </div>
 
-        <UserAuthForm redirectTo={redirect} />
+        <div className='border-border/60 mt-10 flex flex-col gap-3 border-t pt-6'>
+          <p className='text-muted-foreground text-center text-sm'>
+            {t("Don't have an account?")}{' '}
+            <Link
+              to='/sign-up'
+              className='text-primary font-medium hover:opacity-80'
+            >
+              {t('Sign up')}
+            </Link>
+          </p>
 
-        <TermsFooter
-          variant='sign-in'
-          status={status}
-          className='text-center'
-        />
+          {hasTerms && (
+            <TermsFooter
+              variant='sign-in'
+              status={status}
+              className='text-center'
+            />
+          )}
+        </div>
       </div>
     </AuthLayout>
   )

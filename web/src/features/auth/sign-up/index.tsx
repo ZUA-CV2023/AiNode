@@ -20,6 +20,7 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 
 import { useStatus } from '@/hooks/use-status'
+import { useSystemConfig } from '@/hooks/use-system-config'
 
 import { AuthLayout } from '../auth-layout'
 import { TermsFooter } from '../components/terms-footer'
@@ -28,15 +29,22 @@ import { SignUpForm } from './components/sign-up-form'
 export function SignUp() {
   const { t } = useTranslation()
   const { status } = useStatus()
+  const { logo } = useSystemConfig()
 
   return (
     <AuthLayout>
       <div className='w-full space-y-8'>
-        <div className='space-y-2'>
-          <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
+        <div className='flex flex-col items-center'>
+          <div
+            aria-hidden='true'
+            className='flex size-14 items-center justify-center overflow-hidden rounded-2xl ring-1 ring-black/5'
+          >
+            <img src={logo} alt={t('Logo')} className='size-full object-cover' />
+          </div>
+          <h2 className='mt-4 text-center text-2xl font-semibold tracking-tight'>
             {t('Create an account')}
           </h2>
-          <p className='text-muted-foreground text-left text-sm sm:text-base'>
+          <p className='text-muted-foreground mt-2 text-center text-sm sm:text-base'>
             {t('Already have an account?')}{' '}
             <Link
               to='/sign-in'
