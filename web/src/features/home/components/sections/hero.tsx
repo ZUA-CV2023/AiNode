@@ -16,7 +16,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { CherryStudio } from '@lobehub/icons'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, BookOpen, DollarSign, ShieldCheck, UsersRound, Zap } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -25,26 +24,10 @@ import { Button } from '@/components/ui/button'
 import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 
-import { HeroTerminalDemo } from '../hero-terminal-demo'
-
 interface HeroProps {
   className?: string
   isAuthenticated?: boolean
 }
-
-// Stylized three-dots indicator representing "More"
-const MoreIcon = () => (
-  <svg
-    className='text-muted-foreground/60 group-hover:text-foreground size-6 shrink-0 transition-colors'
-    viewBox='0 0 24 24'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-  >
-    <circle cx='6' cy='12' r='2' fill='currentColor' />
-    <circle cx='12' cy='12' r='2' fill='currentColor' />
-    <circle cx='18' cy='12' r='2' fill='currentColor' />
-  </svg>
-)
 
 const chipCls =
   'flex items-center gap-1.5 rounded-full border border-white/70 bg-white/90 py-1.5 pl-1.5 pr-3 text-[11px] font-medium text-slate-600 shadow-[0_12px_28px_-20px_rgba(79,110,246,0.9)] backdrop-blur-sm'
@@ -250,7 +233,6 @@ export function Hero(props: HeroProps) {
   }
 
   return (
-    <>
     <section className='relative flex h-svh flex-col justify-center overflow-hidden px-4 pt-16 md:px-10'>
       {/* Soft brand wash, matching the reference hero backdrop */}
       <div
@@ -333,75 +315,5 @@ export function Hero(props: HeroProps) {
       </div>
 
     </section>
-
-    {/* Next screen: live API demo + supported apps */}
-    <section className='relative px-4 pb-24 md:px-10'>
-      <div className='mx-auto w-full max-w-4xl'>
-        <HeroTerminalDemo className='w-full' />
-      </div>
-
-      {/* Supported Apps */}
-      <div
-        className='landing-animate-fade-up relative mx-auto mt-16 w-full max-w-6xl opacity-0'
-        style={{ animationDelay: '400ms' }}
-      >
-        <div className='mb-4 flex flex-col gap-1.5'>
-          <span className='text-muted-foreground/50 text-[10px] font-bold tracking-[0.15em] uppercase'>
-            {t('Supported Applications')}
-          </span>
-          <p className='text-muted-foreground/60 max-w-xl text-xs leading-relaxed'>
-            {t(
-              'Supports one-click configuration and perfectly adapts to NewAPI multi-protocol configuration.'
-            )}
-          </p>
-        </div>
-        <div className='flex flex-wrap items-center gap-3'>
-          {/* Cherry Studio */}
-          <a
-            href='https://cherry-ai.com'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group flex items-center gap-3 rounded-full border border-transparent bg-white px-5 py-2.5 text-sm font-medium text-foreground/80 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.45)] transition-all duration-300 hover:scale-[1.02] hover:text-foreground'
-          >
-            <CherryStudio.Color size={24} className='shrink-0' />
-            <span>Cherry Studio</span>
-          </a>
-
-          {/* CC Switch */}
-          <a
-            href='https://ccswitch.io'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='group flex items-center gap-3 rounded-full border border-transparent bg-white px-5 py-2.5 text-sm font-medium text-foreground/80 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.45)] transition-all duration-300 hover:scale-[1.02] hover:text-foreground'
-          >
-            <img
-              src='https://ccswitch.io/favicon.png'
-              alt='CC Switch'
-              className='size-6 shrink-0 rounded-md object-contain'
-              onError={(e) => {
-                // Fallback to a styled text avatar if the remote favicon fails to load in sandbox or local environments
-                e.currentTarget.style.display = 'none'
-                const fallback = e.currentTarget.nextSibling as HTMLElement
-                if (fallback) fallback.style.display = 'flex'
-              }}
-            />
-            <span
-              style={{ display: 'none' }}
-              className='bg-primary/10 text-primary size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold'
-            >
-              CC
-            </span>
-            <span>CC Switch</span>
-          </a>
-
-          {/* "更多" */}
-          <div className='group flex cursor-default items-center gap-2.5 rounded-full border border-transparent bg-white px-5 py-2.5 text-sm font-medium text-foreground/55 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.45)] transition-all duration-300 hover:scale-[1.02] hover:text-foreground'>
-            <MoreIcon />
-            <span>{t('More Apps')}</span>
-          </div>
-        </div>
-      </div>
-    </section>
-    </>
   )
 }

@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
+import { BadgePercent, Rocket, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Skeleton } from '@/components/ui/skeleton'
@@ -349,28 +350,67 @@ function Globe() {
 function AuthShowcase({ systemName, loading }: AuthShowcaseProps) {
   const { t } = useTranslation()
 
+  const highlights = [
+    {
+      label: t('Stronger model'),
+      icon: Sparkles,
+      gradient: 'from-[#4f7bf7] to-[#7c6cf6]',
+    },
+    {
+      label: t('Lower price'),
+      icon: BadgePercent,
+      gradient: 'from-[#7c6cf6] to-[#c04fe0]',
+    },
+    {
+      label: t('Easier to implement'),
+      icon: Rocket,
+      gradient: 'from-[#c04fe0] to-[#f472b6]',
+    },
+  ]
+
   return (
     <div className='relative hidden w-full max-w-[560px] flex-1 flex-col lg:flex lg:h-[540px]'>
       <div className='relative z-10 shrink-0'>
-        {loading ? (
-          <Skeleton className='h-12 w-56' />
-        ) : (
-          <h1 className='bg-gradient-to-r from-[#1d63f2] via-[#7b5cf0] to-[#f472b6] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent xl:text-5xl'>
-            {systemName}
-          </h1>
-        )}
+        {/* Brand name with soft colour glow */}
+        <div className='relative'>
+          <div
+            aria-hidden='true'
+            className='pointer-events-none absolute -top-10 -left-8 h-32 w-72 bg-[radial-gradient(circle,rgba(99,102,241,0.22)_0%,transparent_70%)] blur-2xl'
+          />
+          {loading ? (
+            <Skeleton className='relative h-12 w-56' />
+          ) : (
+            <h1 className='relative bg-gradient-to-r from-[#1d63f2] via-[#7b5cf0] to-[#f472b6] bg-clip-text text-[42px] leading-none font-extrabold tracking-[-0.035em] text-transparent xl:text-[54px]'>
+              {systemName}
+            </h1>
+          )}
+        </div>
 
-        <div className='mt-8 grid max-w-[560px] grid-cols-3 gap-x-5 text-[18px] leading-snug font-medium whitespace-nowrap text-[#0f172a] xl:text-[21px]'>
-          <p>{t('Stronger model')}</p>
-          <p>{t('Lower price')}</p>
-          <p>{t('Easier to implement')}</p>
+        {/* Accent rule under the brand name */}
+        <div className='mt-6 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#4c7bf5] via-[#7c6cf6] to-[#c04fe0] shadow-[0_2px_10px_rgba(124,108,246,0.45)]' />
+
+        {/* Value props as frosted glass chips */}
+        <div className='mt-6 flex max-w-[560px] flex-wrap items-center gap-2.5'>
+          {highlights.map(({ label, icon: Icon, gradient }) => (
+            <div
+              key={label}
+              className='group flex items-center gap-2 rounded-2xl border border-white/80 bg-white/65 py-2 pr-3.5 pl-2 text-[14px] font-semibold whitespace-nowrap text-[#0f172a] shadow-[0_10px_26px_-22px_rgba(15,23,42,0.55)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[0_16px_34px_-22px_rgba(79,110,246,0.55)] xl:text-[15px]'
+            >
+              <span
+                className={`flex size-7 items-center justify-center rounded-[10px] bg-gradient-to-br ${gradient} text-white shadow-[0_6px_14px_-8px_rgba(79,110,246,0.9)] transition-transform duration-300 group-hover:scale-105`}
+              >
+                <Icon className='size-[15px]' strokeWidth={2.2} />
+              </span>
+              {label}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Sphere with soft glow */}
       <div
         aria-hidden='true'
-        className='pointer-events-none absolute bottom-[-80px] left-1/2 size-[420px] -translate-x-1/2 xl:size-[480px]'
+        className='pointer-events-none absolute -bottom-[35px] left-1/2 size-[400px] -translate-x-1/2 xl:size-[420px]'
       >
         {/* Outer soft glow */}
         <div className='absolute inset-[-18%] rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.18)_0%,rgba(147,197,253,0.06)_45%,transparent_72%)] blur-xl' />
