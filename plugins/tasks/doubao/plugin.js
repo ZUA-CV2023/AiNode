@@ -422,6 +422,26 @@ function videoResolution(ctx) {
   return resolution;
 }
 
+// Requested duration must fit the model ceiling. The reservation is estimated at
+// the model's longest output, so an over-long request would only fail upstream
+// after quota is already held. -1 lets Ark choose and is allowed; an absent value
+// is left untouched so Ark's own default applies (the reservation still assumes
+// the ceiling, which over-reserves rather than under-charges).
+function videoDuration(ctx) {
+  const req = ctx.requestBody || {};
+  const profile = videoProfile(ctx);
+  const model = trimmed(ctx.upstreamModel || ctx.model);
+  const raw = req.seconds;
+  if (raw === undefined || raw === null || trimmed(String(raw)) === "") return null;
+  const seconds = Number.parseInt(String(raw), 10);
+  if (!Number.isFinite(seconds)) throw new Error(model + " seconds must be an integer");
+  if (seconds === -1) return -1;
+  if (seconds <= 0) throw new Error(model + " seconds must be greater than 0, or -1 to let the model choose");
+  if (seconds > profile.maxDuration)
+    throw new Error(model + " seconds must be <= " + profile.maxDuration + ", got " + seconds);
+  return seconds;
+}
+
 // Max-pixel 16:9 dimensions per resolution tier. Used when ratio is absent or
 // adaptive so the submit-time estimate overestimates rather than underestimates.
 // Official Ark formula: tokens = seconds × width × height × 24 / 1024.
@@ -805,6 +825,8 @@ export function buildSubmitRequest(ctx) {
   const metadata = req.metadata || {};
   // Reject output tiers the model does not offer before any quota is reserved.
   videoResolution(ctx);
+  // Reject over-long or malformed durations before any quota is reserved.
+  videoDuration(ctx);
   const body = Object.assign({ model: req.model || "", content: [] }, metadata);
   const imageContent = [];
   const images = Array.isArray(req.images) ? req.images : [];
