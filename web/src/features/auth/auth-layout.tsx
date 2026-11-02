@@ -394,7 +394,7 @@ function AuthShowcase({ systemName, loading }: AuthShowcaseProps) {
           {highlights.map(({ label, icon: Icon, gradient }) => (
             <div
               key={label}
-              className='group flex items-center gap-2 rounded-2xl border border-white/80 bg-white/65 py-2 pr-3.5 pl-2 text-[14px] font-semibold whitespace-nowrap text-[#0f172a] shadow-[0_10px_26px_-22px_rgba(15,23,42,0.55)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[0_16px_34px_-22px_rgba(79,110,246,0.55)] xl:text-[15px]'
+              className='group flex items-center gap-2 rounded-2xl border border-white/80 bg-white/65 dark:border-white/15 dark:bg-white/6 py-2 pr-3.5 pl-2 text-[14px] font-semibold whitespace-nowrap ttext-[#0f172a] dark:text-slate-200 shadow-[0_10px_26px_-22px_rgba(15,23,42,0.55)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 dark:hover:bg-white/10 hover:shadow-[0_16px_34px_-22px_rgba(79,110,246,0.55)] xl:text-[15px]'
             >
               <span
                 className={`flex size-7 items-center justify-center rounded-[10px] bg-gradient-to-br ${gradient} text-white shadow-[0_6px_14px_-8px_rgba(79,110,246,0.9)] transition-transform duration-300 group-hover:scale-105`}
@@ -429,11 +429,11 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   const { systemName, logo, loading } = useSystemConfig()
 
   return (
-    <div className='relative flex min-h-svh flex-col overflow-hidden bg-[#f3f6fd]'>
+    <div className='relative flex min-h-svh flex-col overflow-hidden bg-[#f3f6fd] dark:bg-[#0b1020]'>
       {/* Soft pastel wash, matching the reference auth backdrop */}
       <div
         aria-hidden='true'
-        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_16%,#e9f1ff_0%,transparent_52%),radial-gradient(circle_at_96%_8%,#f2ecff_0%,transparent_44%),radial-gradient(circle_at_88%_94%,#ffeef6_0%,transparent_46%),radial-gradient(circle_at_14%_86%,#e6f4ff_0%,transparent_44%)]'
+        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_16%,#e9f1ff_0%,transparent_52%),radial-gradient(circle_at_96%_8%,#f2ecff_0%,transparent_44%),radial-gradient(circle_at_88%_94%,#ffeef6_0%,transparent_46%),radial-gradient(circle_at_14%_86%,#e6f4ff_0%,transparent_44%)] dark:opacity-20'
       />
 
       <Link
@@ -463,7 +463,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       <div className='relative z-10 mx-auto flex min-h-svh w-full max-w-[1400px] items-center justify-center gap-12 px-6 py-20 lg:justify-between lg:px-14'>
         <AuthShowcase systemName={systemName} loading={loading} />
 
-        <div className='border-border/60 flex w-full max-w-[420px] shrink-0 flex-col justify-center rounded-2xl border bg-white/90 p-7 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.3)] backdrop-blur-xl sm:p-8 lg:min-h-[540px] lg:max-w-[380px]'>
+        <div className='border-border/60 flex w-full max-w-[420px] shrink-0 flex-col justify-center rounded-2xl border bg-white/90 dark:bg-[#121a2c]/90 p-7 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.3)] backdrop-blur-xl sm:p-8 lg:min-h-[540px] lg:max-w-[380px]'>
           {children}
         </div>
       </div>

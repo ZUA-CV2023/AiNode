@@ -363,7 +363,7 @@ export function UserAuthForm({
                   <FormControl>
                     <Input
                       placeholder={t('Enter your username or email')}
-                      className='border-border/70 h-12 rounded-xl bg-white/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
+                      className='border-border/70 h-12 rounded-xl bg-white/90 dark:bg-white/5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
                       {...field}
                     />
                   </FormControl>
@@ -382,7 +382,7 @@ export function UserAuthForm({
                   <FormControl>
                     <PasswordInput
                       placeholder={t('Enter password')}
-                      className='border-border/70 h-12 rounded-xl bg-white/90 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
+                      className='border-border/70 h-12 rounded-xl bg-white/90 dark:bg-white/5 shadow-[0_1px_3px_rgba(15,23,42,0.06)]'
                       {...field}
                     />
                   </FormControl>
