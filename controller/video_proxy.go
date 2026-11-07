@@ -130,6 +130,44 @@ func VideoProxy(c *gin.Context) {
 	}
 }
 
+// taskMediaRedirectEnabled hands the client a redirect to the upstream media URL
+// instead of streaming the bytes through this server. Off by default: a
+// redirected client fetches directly from the upstream, which removes this
+// server from the media data path but relies on that URL staying publicly
+// fetchable for the whole playback window.
+var taskMediaRedirectEnabled = common.GetEnvOrDefaultBool("TASK_MEDIA_REDIRECT", false)
+
+// requestIsHTTPS reports whether the client reached us over TLS, honouring the
+// proxy header set by the fronting web server.
+func requestIsHTTPS(c *gin.Context) bool {
+	scheme := strings.TrimSpace(strings.Split(c.Request.Header.Get("X-Forwarded-Proto"), ",")[0])
+	if scheme != "" {
+		return strings.EqualFold(scheme, "https")
+	}
+	return c.Request.TLS != nil
+}
+
+// originTaskMediaRedirectable reports whether rawURL can be handed to a browser
+// as a redirect target: an absolute http(s) URL on another origin. Redirecting
+// to this server's own media proxy would loop, and downgrading an https page to
+// an http artifact would be blocked as mixed content.
+func originTaskMediaRedirectable(c *gin.Context, rawURL string) bool {
+	target, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil || target == nil {
+		return false
+	}
+	if target.Scheme != "http" && target.Scheme != "https" {
+		return false
+	}
+	if target.Host == "" {
+		return false
+	}
+	if target.Scheme == "http" && requestIsHTTPS(c) {
+		return false
+	}
+	return !isSelfTaskMediaURL(c, target)
+}
+
 func proxyTaskMedia(c *gin.Context, task *model.Task, descriptor *relaychannel.TaskContentRequest) error {
 	if descriptor == nil {
 		return &taskMediaProxyError{
@@ -144,6 +182,14 @@ func proxyTaskMedia(c *gin.Context, task *model.Task, descriptor *relaychannel.T
 			message: "Artifact content is no longer available",
 		}
 	}
+	// Optional egress bypass: let the browser fetch the artifact from the
+	// upstream. Credential-bearing requests must keep using the proxy.
+	if taskMediaRedirectEnabled && descriptor.Credentialless && len(descriptor.Headers) == 0 &&
+		originTaskMediaRedirectable(c, rawURL) {
+		c.Redirect(http.StatusFound, rawURL)
+		return nil
+	}
+
 	if strings.HasPrefix(rawURL, "data:") {
 		if len(rawURL) > taskMediaDataURLMaxEncodedBytes {
 			return &taskMediaProxyError{
