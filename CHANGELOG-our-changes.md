@@ -296,6 +296,175 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 
 ---
 
+## 修改 11:登录/注册页与首页视觉改版
+
+**类型**:修改源码(前端)
+**日期**:2026-10-31
+**提交**:`7cfad98`
+**主要文件**
+
+- 新增:`web/src/lib/password-strength.ts`、`web/src/components/password-strength-meter.tsx`、`web/scripts/add-missing-keys.mjs`
+- 修改:`web/src/features/auth/`(auth-layout、sign-in、sign-up)、`web/src/features/home/`(hero、hero-terminal-demo、cta、features、how-it-works、stats)、`web/src/components/`(password-input、layout/components/public-header)、`web/src/styles/`(index.css、theme.css)、7 个 `web/src/i18n/locales/*.json`
+
+**内容**
+
+1. 新增密码强度提示:0~4 分评分(长度与字符种类),注册页密码框下方显示四段条与「弱/中等/强/非常强」文案;仅作客户端提示,真实策略仍由 `accountPasswordSchema` 与后端强制。
+2. 登录/注册页重做:浅色渐变背景、左侧品牌展示区(大号渐变品牌名、玻璃胶囊卖点、星球/星光装饰),右侧居中卡片并加 logo;登录页把注册入口与条款移到表单下方。
+3. 首页改版:Hero 增加装饰插画(轨道粒子、渐变核心、能力卡片),终端演示强调色统一为 `primary`,CTA 按钮改为胶囊并指向 `/sign-in`,其余区块样式随新主题调整。
+4. 主题与动效:`theme.css` 主色改为 `#158eff`、圆角基准 `1rem` → `0.5rem`、默认字体栈改为 Lato/PingFang SC/Noto Sans SC 等;`index.css` 新增 `landing-orbit` / `auth-twinkle` 动画,并遵守 `prefers-reduced-motion`。
+5. i18n:7 个 locale 重新生成并排序;`add-missing-keys.mjs` 为密码强度文案补齐 7 种语言。
+
+**原因**
+
+仓库外已有一轮本地视觉改版,需要把最终版本同步进仓库,并统一主题 token。
+
+**影响**
+
+- 只改前端,后端接口、计费和数据库均未改动。
+- 主色、圆角基准与默认字体栈是全局 token,会影响全部页面,不只登录页和首页。
+- 新增文案已进入 7 个 locale 文件。
+
+**验证**
+
+- CI 构建成功(GitHub Actions run #5,版本 `v1.0.0-rc.43+7cfad98`)。
+- 该提交包含在当前线上版本 `v1.0.0-rc.43+bbd9a0f` 中。
+- 未新增自动化测试。
+
+---
+
+## 修改 12:首页统计/流程区块替换为模型与优势区块
+
+**类型**:修改源码(前端)
+**日期**:2026-10-31
+**提交**:`ce99081`
+**主要文件**
+
+- 新增:`web/src/features/home/components/sections/models.tsx`、`web/src/features/home/components/sections/advantage.tsx`
+- 修改:`web/src/features/home/index.tsx`、`web/src/features/home/components/index.ts`、`sections/features.tsx`、`sections/hero.tsx`、`web/src/features/auth/auth-layout.tsx`、`web/src/styles/index.css`、`web/src/i18n/locales/zh.json`、`zh-TW.json`
+
+**内容**
+
+1. 新增 `Models` 区块:两行模型 logo 跑马灯(OpenAI/Claude/Gemini/Qwen/DeepSeek/豆包等),下方四项统计(500+ 模型、50+ 上游、50+ 兼容路由、99.9% 可用性)带滚动进入计数动画。
+2. 新增 `Advantage` 区块:高可用接入、服务保障、透明计费三张卡片。
+3. 首页顺序改为 Hero → Models → Advantage → Features → CTA;`components/index.ts` 不再导出 `Stats` / `HowItWorks`;`features.tsx` 重写为四张能力卡;`hero.tsx` 删除原下半部分内容。
+4. 登录页品牌展示区改为玻璃胶囊卖点 + 渐变装饰条。
+5. 新增文案只写入 `zh.json` / `zh-TW.json`。
+
+**原因**
+
+原 `Stats` / `HowItWorks` 与新的首页信息结构重复,统一改为「模型支持 + 平台优势 + 能力」三段。
+
+**影响**
+
+- 前端首页内容结构变化,后端无改动。
+- **i18n 缺口**:本提交新增的 key 未同步到 `en/fr/ja/ru/vi`,这五种界面语言会回退显示英文。
+- `how-it-works.tsx` / `stats.tsx` 文件仍保留在仓库中但已无引用,属于遗留死文件。
+
+**验证**
+
+- CI 构建成功(GitHub Actions run #6,版本 `v1.0.0-rc.43+ce99081`)。
+- 该提交包含在当前线上版本 `v1.0.0-rc.43+bbd9a0f` 中。
+- 未新增自动化测试。
+
+---
+
+## 修改 13:登录页与输入框深色模式修复
+
+**类型**:修改源码(前端)
+**日期**:2026-11-02
+**提交**:`4341d92`
+**文件**:`web/src/features/auth/auth-layout.tsx`、`web/src/features/auth/sign-in/components/user-auth-form.tsx`
+
+**内容**
+
+- 登录页外层背景补 `dark:bg-[#0b1020]`,背景光晕在深色下 `dark:opacity-20`,登录卡片补 `dark:bg-[#121a2c]/90`,品牌胶囊补深色边框/背景/文字与 hover 颜色。
+- 登录表单用户名与密码输入框补 `dark:bg-white/5`。
+
+**原因**
+
+登录页此前只按浅色背景设计;深色模式下外层仍是浅色背景、卡片与输入框仍是白底,对比度和一致性都不对。
+
+**影响**
+
+只改样式,浅色模式不变。
+
+**已知问题**
+
+同一提交把品牌胶囊的浅色文字类写成 `ttext-[#0f172a]`(应为 `text-`),Tailwind 不会生成该类,浅色模式下文字颜色会回退到继承值。待后续修复。
+
+**验证**
+
+- 该提交没有单独的 CI 运行;紧随其后的 `c438989` 构建(run #7)包含它的代码。
+- 该提交包含在当前线上版本 `v1.0.0-rc.43+bbd9a0f` 中。
+- 未新增自动化测试。
+
+---
+
+## 修改 14:豆包视频在预扣费前校验时长
+
+**类型**:修改源码(任务插件)
+**日期**:2026-11-02
+**提交**:`c438989`
+**文件**:`plugins/tasks/doubao/plugin.js`
+
+**内容**
+
+新增 `videoDuration(ctx)`,在 `buildSubmitRequest` 中、`videoResolution` 之后调用:
+
+- `seconds` 缺省或空串:不处理,交给方舟默认值(预扣仍按模型最长时长估算,属于多扣而非少扣)。
+- 非整数或 `<= 0`:报错(`-1` 例外)。
+- `-1`:放行,表示由模型选择时长;插件已声明 `duration-auto@1`,宿主会按最长时长预扣、按上游回报结算。
+- 超过 `profile.maxDuration`(按模型为 12/15/30 秒):报错。
+
+**原因**
+
+用户可控的 `seconds` 是计费乘数。预扣按模型最长时长估算,超长请求原本要等上游失败后才退款,期间额度被占用。按计费不变量,必须在预扣前限界并返回 400。
+
+**影响**
+
+- 只影响豆包视频任务提交校验,合法请求行为不变,错误信息带模型名。
+- 宿主层另有 `relaycommon.MaxTaskDurationSeconds` 兜底,本改动是纵深防御。
+
+**验证**
+
+- CI 构建成功(GitHub Actions run #7,版本 `v1.0.0-rc.43+c438989`)。
+- 该提交包含在当前线上版本 `v1.0.0-rc.43+bbd9a0f` 中。
+- 未新增插件测试。
+
+---
+
+## 修改 15:任务媒体支持重定向到上游 URL
+
+**类型**:修改源码
+**日期**:2026-11-07
+**提交**:`bbd9a0f`
+**文件**:`controller/video_proxy.go`
+
+**内容**
+
+新增 `TASK_MEDIA_REDIRECT` 环境变量(默认 `false`)。开启后,若媒体请求无凭据、无自定义头、目标是不自环的外部 http(s) URL,则返回 `302` 让客户端直连上游;否则继续由本服务代理。同时新增:
+
+- `requestIsHTTPS`:识别 `X-Forwarded-Proto` 或 TLS 状态。
+- `originTaskMediaRedirectable`:只允许绝对 http(s)、非同源地址;https 页面不降级到 http,避免混合内容拦截。
+
+**原因**
+
+大文件媒体播放会占用服务器出口带宽;把无凭据的媒体请求交给客户端直连上游,可把本服务从数据路径上移开。
+
+**影响**
+
+- 默认关闭,现有行为不变。
+- 开启后依赖上游 URL 在整个播放期可公开访问;客户端会直接看到上游 URL 并连接上游,上游看到的是客户端 IP 而不是本服务 IP。这是用带宽换来的取舍。
+- 带凭据或自定义头的请求始终走代理,不会因重定向泄露凭据。
+
+**验证**
+
+- CI 构建成功(GitHub Actions run #8,版本 `v1.0.0-rc.43+bbd9a0f`)。
+- 当前线上版本即 `v1.0.0-rc.43+bbd9a0f`,容器 healthy。
+- 未新增自动化测试;该开关默认关闭,线上未启用。
+
+---
+
 ## 新增的本地部署文件
 
 以下文件为本 fork 新增,不属于上游:
@@ -353,5 +522,9 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | --- | --- | --- |
 | 2026-10-19 | — | 修改 1~4、6 |
 | 2026-10-20 | `v1.0.0-rc.43+092982c` | 修改 5、7;首次构建镜像并部署上线,功能实测通过 |
-| 2026-10-20 | 待部署 | 修改 8、9;补齐变更记录,替换品牌资源(AiNode 标志与静态标题) |
-| 2026-10-27 | 待部署 | 修改 10;清理源码品牌残留(默认系统名、启动日志、panic 链接、HTML 注释) |
+| 2026-10-23 | `v1.0.0-rc.43+27c1e55` | 修改 8、9;CI run #3 构建成功,已包含在当前线上版本中 |
+| 2026-10-28 | `v1.0.0-rc.43+2e74e22` | 修改 10;CI run #4 构建成功,已包含在当前线上版本中 |
+| 2026-10-31 | `v1.0.0-rc.43+7cfad98` | 修改 11;CI run #5 构建成功 |
+| 2026-10-31 | `v1.0.0-rc.43+ce99081` | 修改 12;CI run #6 构建成功 |
+| 2026-11-02 | `v1.0.0-rc.43+c438989` | 修改 13、14;CI run #7 构建成功(`4341d92` 无单独运行) |
+| 2026-11-07 | `v1.0.0-rc.43+bbd9a0f` | 修改 15;CI run #8 构建成功;当前线上版本,容器 healthy |
