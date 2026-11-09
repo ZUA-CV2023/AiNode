@@ -465,6 +465,35 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 
 ---
 
+## 修改 16:CI 测试门禁复用 ci.yml
+
+**类型**:修改文件(本 fork 的 workflow)
+**日期**:2026-11-09
+**文件**:`.github/workflows/ci.yml`、`.github/workflows/build-image.yml`
+
+**内容**
+
+1. `ci.yml` 增加 `workflow_call` 触发器;两处 checkout 的 `repository` 改为 `github.event.pull_request.base.repo.full_name || github.repository`,使其在 PR 与 push/workflow_call 下都能取到仓库。
+2. `build-image.yml` 新增 `test` job,通过 `uses: ./.github/workflows/ci.yml` 复用整套检查;`build` 增加 `needs: test`。
+
+**原因**
+
+此前 `ci.yml` 只在 `pull_request` 触发;直接 push main 时只有 `build-image` 运行,而它只构建不测试,测试没跑过也会构建并推送 `:latest`。
+
+**影响**
+
+- 每次 push main / tag 会先跑后台 `go vet`、`go build`、`make test` 与前端 `typecheck`、`test`;失败则不构建、不推送。
+- 构建总时长增加(测试约几分钟);PR 流程不变;不改业务代码。
+- 这是对上游 `.github/workflows/ci.yml` 的改动,同步上游时需留意 `on`、checkout 与 `concurrency` 段落。
+
+**验证**
+
+- 已用 PyYAML 解析两个工作流,语法通过。
+- 尚未 push,真实运行待首次 push 后确认(本地提交不会触发 CI)。
+- `test` job 本身不设置 `concurrency`;`ci.yml` 顶层的 `concurrency` 保留,用于 PR 运行。
+
+---
+
 ## 新增的本地部署文件
 
 以下文件为本 fork 新增,不属于上游:
@@ -528,3 +557,4 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | 2026-10-31 | `v1.0.0-rc.43+ce99081` | 修改 12;CI run #6 构建成功 |
 | 2026-11-02 | `v1.0.0-rc.43+c438989` | 修改 13、14;CI run #7 构建成功(`4341d92` 无单独运行) |
 | 2026-11-07 | `v1.0.0-rc.43+bbd9a0f` | 修改 15;CI run #8 构建成功;当前线上版本,容器 healthy |
+| 2026-11-09 | 待构建 | 修改 16;CI 测试门禁,尚未 push,首次运行待验证 |

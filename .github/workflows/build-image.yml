@@ -19,8 +19,14 @@ env:
   BASE_VERSION: v1.0.0-rc.43
 
 jobs:
+  # Reuse the CI workflow so a failing vet/build/test blocks the image push.
+  test:
+    name: Vet, build and test
+    uses: ./.github/workflows/ci.yml
+
   build:
     name: Build & push
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
