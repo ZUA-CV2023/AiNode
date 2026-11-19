@@ -153,6 +153,11 @@ export function useSidebarData(): SidebarData {
             icon: Ticket,
           },
           {
+            title: t('Feedback Management'),
+            url: '/feedback',
+            icon: MessageSquare,
+          },
+          {
             title: t('Subscriptions'),
             url: '/subscriptions',
             icon: CreditCard,

@@ -357,7 +357,7 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 **影响**
 
 - 前端首页内容结构变化,后端无改动。
-- **i18n 缺口**:本提交新增的 key 未同步到 `en/fr/ja/ru/vi`,这五种界面语言会回退显示英文。
+- **i18n 缺口**:本提交新增的 key 未同步到 `en/fr/ja/ru/vi`,这五种界面语言会回退显示英文(已在修改 17 补齐)。
 - `how-it-works.tsx` / `stats.tsx` 文件仍保留在仓库中但已无引用,属于遗留死文件。
 
 **验证**
@@ -494,6 +494,57 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 
 ---
 
+## 修改 17:站内用户反馈(用户提交 + 后台管理)
+
+**类型**:修改源码(后端 + 前端)
+**日期**:2026-11-19
+**文件**
+
+- 新增:`model/feedback.go`、`model/feedback_test.go`、`controller/feedback.go`、`web/src/features/feedback/`、`web/src/routes/_authenticated/feedback/index.tsx`
+- 修改:`model/main.go`(AutoMigrate)、`router/api-router.go`(路由)、`web/src/components/profile-dropdown.tsx`(用户入口)、`web/src/hooks/use-sidebar-data.ts`(后台菜单)、`web/src/routeTree.gen.ts`(路由生成)、`web/scripts/add-missing-keys.mjs`、7 个 `web/src/i18n/locales/*.json`
+
+**内容**
+
+1. 新增 `feedback` 表(单数表名):`id`、`user_id`、`category`、`content`、`contact`、`page_url`、`user_agent`、`status`、`admin_note`、`created_at`、`updated_at`;索引 `created_at`、`user_id`、`status`;时间沿用仓库其它表的 int64 Unix 秒。已加入 `migrateDB` 的 AutoMigrate 列表,部署后首次启动自动建表。
+2. 用户端 `POST /api/feedback`(UserAuth):`category` 必须是 bug/feature/other;`content` 去首尾空白后 10–2000 字;`contact` ≤255 字;`page_url` / `user_agent` 截断 255 字;同一用户 24 小时内最多 10 条;成功返回 `{id}`。
+3. 用户端 `GET /api/feedback`(UserAuth):只返回自己的反馈,支持 `p` / `page_size`,按时间倒序;响应不含管理员备注。
+4. 管理端 `GET /api/feedback/list`(AdminAuth):支持 `p`、`page_size`、`status`、`category`、`keyword`;`keyword` 匹配 id、user_id、content、contact、page_url、user_agent。
+5. 管理端 `PUT /api/feedback/:id`(AdminAuth):修改 `status` 与 `admin_note`,并写管理审计日志(`feedback.update`)。
+6. 本期不做删除,避免误删;后续需要可加软删除。
+7. 前端用户入口:头像下拉菜单新增「反馈」,打开 Modal(类型、内容、联系方式可选),提交时自动带当前页面 URL;底部隐私告知「提交内容会记录你的账号和当前页面,仅用于改进产品」。
+8. 前端后台:新增「反馈管理」页面,表格、状态/类型筛选、关键字搜索、详情查看;详情内修改状态、填写管理员备注并保存。菜单挂在侧栏 Admin 分组,路由守卫要求 `ROLE.ADMIN`,接口用 AdminAuth。
+9. i18n:新增文案进入 en / zh / zh-TW / fr / ja / ru / vi 七种语言;locale 写入仍走 `add-missing-keys.mjs` + `bun run i18n:sync`。
+10. 顺带补齐修改 12 遗留的 45 个首页文案缺口(en/fr/ja/ru/vi),避免 `i18n:sync` 把中文值写进非中文语言包。
+
+**原因**
+
+需要一个站内反馈入口和后台处理闭环。邮件 / 企微 / 微信群通知本期不做,但数据模型和 API 没有写死通知渠道,后续可在保存后挂通知。
+
+**影响**
+
+- 新增表;部署后首次启动会执行 AutoMigrate 创建 `feedback`,不改既有表。
+- 新增 2 条用户接口和 2 条管理接口;用户接口按 `user_id` 隔离,管理接口为 AdminAuth。
+- 前端新增页面与入口,不引入新依赖。
+- 对上游同步:新增文件不冲突;`model/main.go`、`router/api-router.go`、`profile-dropdown.tsx`、`use-sidebar-data.ts` 与生成的 `routeTree.gen.ts` 会在同步上游时产生冲突。
+
+**验证**
+
+- `go build ./...` 通过。
+- `go test ./model -run Feedback -count=1` 通过;`go test ./model -count=1` 通过。
+- `bun run build` 通过(已重新生成 `routeTree.gen.ts`)。
+- `bun run typecheck` 通过。
+- 新增 `feedback-dialog.test.tsx` 3 项通过;`bun run test` 全量通过。
+- 变更文件 scoped `oxlint` 0 error / 0 warning;全仓 `bun run lint` 仍有既有 error(与本次改动无关)。
+- 尚未 push、未部署、未对线上做任何操作。
+
+**待确认**
+
+- 后台权限使用 AdminAuth(当前实现)还是 RootAuth。
+- 24 小时 10 条是否合适,是否还需要额外的 IP 级限流。
+- 是否需要给管理员提供删除能力(建议软删除)。
+
+---
+
 ## 新增的本地部署文件
 
 以下文件为本 fork 新增,不属于上游:
@@ -558,3 +609,4 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | 2026-11-02 | `v1.0.0-rc.43+c438989` | 修改 13、14;CI run #7 构建成功(`4341d92` 无单独运行) |
 | 2026-11-07 | `v1.0.0-rc.43+bbd9a0f` | 修改 15;CI run #8 构建成功;当前线上版本,容器 healthy |
 | 2026-11-09 | 待构建 | 修改 16;CI 测试门禁,尚未 push,首次运行待验证 |
+| 2026-11-19 | 待构建 | 修改 17;站内用户反馈(用户入口 + 后台管理),尚未 push |

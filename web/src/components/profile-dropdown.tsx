@@ -17,8 +17,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useNavigate } from '@tanstack/react-router'
-import { User, Wallet, LogOut, Settings, ShieldCheck } from 'lucide-react'
-import { useMemo } from 'react'
+import {
+  User,
+  Wallet,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  MessageSquare,
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SignOutDialog } from '@/components/sign-out-dialog'
@@ -31,6 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { FeedbackDialog } from '@/features/feedback/components/feedback-dialog'
 import useDialogState from '@/hooks/use-dialog'
 import { useIsSidebarModuleVisible } from '@/hooks/use-sidebar-config'
 import { useUserDisplay } from '@/hooks/use-user-display'
@@ -44,6 +52,7 @@ export function ProfileDropdown() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [open, setOpen] = useDialogState()
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const user = useAuthStore((state) => state.auth.user)
   const { displayName, roleLabel } = useUserDisplay(user)
   const isSuperAdmin = user?.role === ROLE.SUPER_ADMIN
@@ -122,6 +131,11 @@ export function ProfileDropdown() {
             </DropdownMenuItem>
           )}
 
+          <DropdownMenuItem onClick={() => setFeedbackOpen(true)}>
+            <MessageSquare className='size-4' />
+            {t('Feedback')}
+          </DropdownMenuItem>
+
           {isSuperAdmin && (
             <DropdownMenuItem
               onClick={() =>
@@ -146,6 +160,10 @@ export function ProfileDropdown() {
       </DropdownMenu>
 
       <SignOutDialog open={!!open} onOpenChange={setOpen} />
+      <FeedbackDialog
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
+      />
     </>
   )
 }
