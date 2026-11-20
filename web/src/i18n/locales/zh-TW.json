@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "已刪除失聯實例",
     "Deleted successfully": "刪除成功",
     "Deleted tokens": "實際刪除數",
+    "Deleted user": "已註銷",
     "Deleted user {{username}} (ID: {{id}})": "刪除用戶 {{username}}（ID: {{id}}）",
     "Deleted: {{processed}}": "實際刪除 {{processed}} 個",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "刪除此自定义版本不会停用平台，同名內建外掛将自动恢复。",

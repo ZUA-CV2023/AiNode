@@ -165,6 +165,16 @@ export function FeedbackDetailDialog(props: FeedbackDetailDialogProps) {
         <dl className='grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm'>
           <dt className='text-muted-foreground'>{t('User ID')}</dt>
           <dd>{props.feedback.user_id}</dd>
+          <dt className='text-muted-foreground'>{t('Username')}</dt>
+          <dd className='break-all'>
+            {props.feedback.user_deleted
+              ? t('Deleted user')
+              : props.feedback.username || '-'}
+          </dd>
+          <dt className='text-muted-foreground'>{t('Email')}</dt>
+          <dd className='break-all'>
+            {props.feedback.user_deleted ? '-' : props.feedback.email || '-'}
+          </dd>
           <dt className='text-muted-foreground'>{t('Type')}</dt>
           <dd>
             {t(getFeedbackCategoryLabelKey(props.feedback.category))}

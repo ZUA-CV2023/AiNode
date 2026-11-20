@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "Instance expirée supprimée",
     "Deleted successfully": "Supprimé avec succès",
     "Deleted tokens": "Jetons supprimés",
+    "Deleted user": "Utilisateur supprimé",
     "Deleted user {{username}} (ID: {{id}})": "Utilisateur {{username}} supprimé (ID : {{id}})",
     "Deleted: {{processed}}": "Supprimés : {{processed}}",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "La suppression de cette version personnalisée ne désactive pas la plateforme. Le plugin intégré du même nom sera restauré automatiquement.",

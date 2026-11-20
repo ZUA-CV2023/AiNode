@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "期限切れインスタンスを削除しました",
     "Deleted successfully": "削除しました",
     "Deleted tokens": "削除したトークン数",
+    "Deleted user": "削除済みユーザー",
     "Deleted user {{username}} (ID: {{id}})": "ユーザー {{username}} を削除しました（ID: {{id}}）",
     "Deleted: {{processed}}": "削除：{{processed}} 件",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "このカスタムバージョンを削除してもプラットフォームは停止しません。同名の組み込みプラグインが自動的に復元されます。",

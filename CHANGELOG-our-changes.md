@@ -537,11 +537,47 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 - 变更文件 scoped `oxlint` 0 error / 0 warning;全仓 `bun run lint` 仍有既有 error(与本次改动无关)。
 - 尚未 push、未部署、未对线上做任何操作。
 
-**待确认**
+**已知限制与待办**
 
-- 后台权限使用 AdminAuth(当前实现)还是 RootAuth。
-- 24 小时 10 条是否合适,是否还需要额外的 IP 级限流。
-- 是否需要给管理员提供删除能力(建议软删除)。
+- 多库迁移验证待补:线上为 SQLite(`/opt/new-api/data/one-api.db`),本地无 MySQL/PostgreSQL 实例;本次不阻塞上线,后续补三库验证。
+- 后台权限使用 AdminAuth、同一用户 24 小时最多 10 条、不做删除,均已确认。
+- 邮件 / 企微 / 微信群通知本期不做;数据模型和 API 未写死通知渠道,后续可在保存后挂通知。
+- 频率限制为 count-then-insert,极端并发下可能略超 1 条;如需严格原子性,后续可加 Redis 或事务锁。
+
+---
+
+## 修改 18:后台反馈列表与详情显示提交者身份
+
+**类型**:修改源码(后端 + 前端)
+**日期**:2026-11-20
+**文件**
+
+- 后端:`model/feedback.go`、`model/feedback_test.go`
+- 前端:`web/src/features/feedback/types.ts`、`components/feedback-columns.tsx`、`components/feedback-detail-dialog.tsx`、`web/scripts/add-missing-keys.mjs`、7 个 `web/src/i18n/locales/*.json`
+
+**内容**
+
+1. 管理端列表查询 `LEFT JOIN users`(排除软删除用户),带出 `username` / `email`;用户不存在或已软删时标记 `user_deleted=true`。
+2. 前端列表优先显示 username,缺失时显示 email,再缺失回退 `User {{id}}`;已注销显示「已注销」。详情显示 `User ID`、`Username`、`Email`。
+3. 用户端 `GET /api/feedback` 保持不变,不返回 username/email/admin_note;email 只在 AdminAuth 的管理端返回。
+
+**原因**
+
+管理员只能看到 `user_id` 时无法识别提交者,反馈处理需要知道是谁提交的。
+
+**影响**
+
+- 只影响管理端列表/详情;查询多一次 `LEFT JOIN users`(关联主键)。
+- 用户端接口不泄露邮箱;邮箱仅管理员可见。
+
+**验证**
+
+- `go build ./...` 通过。
+- `go test ./model -run Feedback -count=1` 通过(含新增的 `TestGetAllFeedbackIncludesUserIdentity`)。
+- `bun run typecheck` 通过;`bun run build` 通过。
+- `bunx vitest run src/features/feedback` 3 项通过。
+- 变更文件 scoped `oxlint` 0 error / 0 warning。
+- 尚未 push、未部署。
 
 ---
 
@@ -610,3 +646,4 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | 2026-11-07 | `v1.0.0-rc.43+bbd9a0f` | 修改 15;CI run #8 构建成功;当前线上版本,容器 healthy |
 | 2026-11-09 | 待构建 | 修改 16;CI 测试门禁,尚未 push,首次运行待验证 |
 | 2026-11-19 | 待构建 | 修改 17;站内用户反馈(用户入口 + 后台管理),尚未 push |
+| 2026-11-20 | 待构建 | 修改 18;后台反馈列表/详情显示用户身份,尚未 push |

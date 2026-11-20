@@ -148,6 +148,63 @@ func TestGetAllFeedbackFilters(t *testing.T) {
 	}
 }
 
+func TestGetAllFeedbackIncludesUserIdentity(t *testing.T) {
+	resetFeedbackTable(t)
+
+	alice := User{
+		Username: "feedback-identity-alice",
+		Password: "password",
+		Email:    "alice@example.com",
+		AffCode:  "feedback-identity-alice",
+	}
+	bob := User{
+		Username: "feedback-identity-bob",
+		Password: "password",
+		Email:    "bob@example.com",
+		AffCode:  "feedback-identity-bob",
+	}
+	require.NoError(t, DB.Create(&alice).Error)
+	require.NoError(t, DB.Create(&bob).Error)
+	t.Cleanup(func() {
+		DB.Unscoped().Where("id IN ?", []int{alice.Id, bob.Id}).Delete(&User{})
+	})
+
+	now := common.GetTimestamp()
+	rows := []Feedback{
+		{UserId: alice.Id, Category: FeedbackCategoryOther, Content: "alice feedback", CreatedAt: now - 20, UpdatedAt: now - 20},
+		{UserId: bob.Id, Category: FeedbackCategoryOther, Content: "bob feedback", CreatedAt: now - 10, UpdatedAt: now - 10},
+		{UserId: 999999, Category: FeedbackCategoryOther, Content: "missing user feedback", CreatedAt: now, UpdatedAt: now},
+	}
+	require.NoError(t, DB.Create(&rows).Error)
+	require.NoError(t, DB.Delete(&bob).Error)
+
+	items, total, err := GetAllFeedback("", "", "", 0, 10)
+	require.NoError(t, err)
+	assert.Equal(t, int64(3), total)
+	require.Len(t, items, 3)
+
+	byContent := make(map[string]*FeedbackWithUser, len(items))
+	for _, item := range items {
+		byContent[item.Content] = item
+	}
+
+	aliceItem := byContent["alice feedback"]
+	require.NotNil(t, aliceItem)
+	assert.Equal(t, "feedback-identity-alice", aliceItem.Username)
+	assert.Equal(t, "alice@example.com", aliceItem.Email)
+	assert.False(t, aliceItem.UserDeleted)
+
+	bobItem := byContent["bob feedback"]
+	require.NotNil(t, bobItem)
+	assert.True(t, bobItem.UserDeleted)
+	assert.Empty(t, bobItem.Username)
+	assert.Empty(t, bobItem.Email)
+
+	missingItem := byContent["missing user feedback"]
+	require.NotNil(t, missingItem)
+	assert.True(t, missingItem.UserDeleted)
+}
+
 func TestFeedbackCategoryAndStatusValidation(t *testing.T) {
 	for _, category := range []string{FeedbackCategoryBug, FeedbackCategoryFeature, FeedbackCategoryOther} {
 		assert.True(t, FeedbackCategoryValid(category))

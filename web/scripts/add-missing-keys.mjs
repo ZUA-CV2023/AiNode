@@ -702,6 +702,20 @@ for (const [locale, translations] of Object.entries(homePageKeys)) {
   Object.assign(newKeys[locale], translations)
 }
 
+const feedbackIdentityKeys = {
+  en: { 'Deleted user': 'Deleted user' },
+  zh: { 'Deleted user': '已注销' },
+  'zh-TW': { 'Deleted user': '已註銷' },
+  fr: { 'Deleted user': 'Utilisateur supprimé' },
+  ja: { 'Deleted user': '削除済みユーザー' },
+  ru: { 'Deleted user': 'Удалённый пользователь' },
+  vi: { 'Deleted user': 'Người dùng đã xóa' },
+}
+
+for (const [locale, translations] of Object.entries(feedbackIdentityKeys)) {
+  Object.assign(newKeys[locale], translations)
+}
+
 async function main() {
   let totalAdded = 0
 

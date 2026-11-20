@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "Устаревший экземпляр удален",
     "Deleted successfully": "Удалено успешно",
     "Deleted tokens": "Удалённые токены",
+    "Deleted user": "Удалённый пользователь",
     "Deleted user {{username}} (ID: {{id}})": "Удалён пользователь {{username}} (ID: {{id}})",
     "Deleted: {{processed}}": "Удалено: {{processed}}",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "Удаление этой пользовательской версии не отключит платформу. Одноимённый встроенный плагин будет восстановлен автоматически.",

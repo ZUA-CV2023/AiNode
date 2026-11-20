@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "Deleted stale instance",
     "Deleted successfully": "Deleted successfully",
     "Deleted tokens": "Deleted tokens",
+    "Deleted user": "Deleted user",
     "Deleted user {{username}} (ID: {{id}})": "Deleted user {{username}} (ID: {{id}})",
     "Deleted: {{processed}}": "Deleted: {{processed}}",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.",

@@ -47,18 +47,26 @@ export function useFeedbackColumns(
       size: 80,
     },
     {
-      accessorKey: 'user_id',
-      header: t('User ID'),
-      meta: { mobileHidden: true },
-      cell: ({ row }) => (
-        <StatusBadge
-          label={t('User {{id}}', { id: row.getValue('user_id') as number })}
-          variant='neutral'
-          copyable={false}
-          className='-ml-1.5'
-        />
-      ),
-      size: 110,
+      id: 'user',
+      header: t('User'),
+      meta: { mobileBadge: true },
+      cell: ({ row }) => {
+        const feedback = row.original
+        const label = feedback.user_deleted
+          ? t('Deleted user')
+          : feedback.username ||
+            feedback.email ||
+            t('User {{id}}', { id: feedback.user_id })
+        return (
+          <StatusBadge
+            label={label}
+            variant='neutral'
+            copyable={false}
+            className='-ml-1.5'
+          />
+        )
+      },
+      size: 160,
     },
     {
       accessorKey: 'category',

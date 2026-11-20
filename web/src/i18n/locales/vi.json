@@ -1882,6 +1882,7 @@
     "Deleted stale instance": "Đã xóa phiên bản mất kết nối",
     "Deleted successfully": "Xóa thành công",
     "Deleted tokens": "Số mã thông báo đã xóa",
+    "Deleted user": "Người dùng đã xóa",
     "Deleted user {{username}} (ID: {{id}})": "Đã xóa người dùng {{username}} (ID: {{id}})",
     "Deleted: {{processed}}": "Đã xóa: {{processed}}",
     "Deleting this custom version does not disable the platform. The same-name factory plugin will be restored automatically.": "Xóa phiên bản tùy chỉnh này không làm vô hiệu nền tảng. Plugin tích hợp cùng tên sẽ tự động được khôi phục.",

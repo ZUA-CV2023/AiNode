@@ -23,6 +23,9 @@ export type FeedbackStatus = 'pending' | 'processing' | 'resolved' | 'ignored'
 export interface Feedback {
   id: number
   user_id: number
+  username: string
+  email: string
+  user_deleted: boolean
   category: FeedbackCategory
   content: string
   contact: string

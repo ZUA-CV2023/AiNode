@@ -57,6 +57,17 @@ func (Feedback) TableName() string {
 	return "feedback"
 }
 
+// FeedbackWithUser is the admin list/detail row: feedback plus the submitting
+// user's identity. UserDeleted is true when the user row is missing or
+// soft-deleted, so the admin UI can fall back to the stored user_id.
+type FeedbackWithUser struct {
+	Feedback
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	UserDeleted bool   `json:"user_deleted"`
+	UserIdFound *int   `json:"-"`
+}
+
 func (feedback *Feedback) Insert() error {
 	now := common.GetTimestamp()
 	feedback.CreatedAt = now
@@ -92,24 +103,25 @@ func GetFeedbackByUser(userId int, startIdx int, pageSize int) ([]*Feedback, int
 	return feedbacks, total, err
 }
 
-func GetAllFeedback(status string, category string, keyword string, startIdx int, pageSize int) ([]*Feedback, int64, error) {
-	query := DB.Model(&Feedback{})
+func GetAllFeedback(status string, category string, keyword string, startIdx int, pageSize int) ([]*FeedbackWithUser, int64, error) {
+	query := DB.Model(&Feedback{}).
+		Joins("LEFT JOIN users ON users.id = feedback.user_id AND users.deleted_at IS NULL")
 	if status != "" {
-		query = query.Where("status = ?", status)
+		query = query.Where("feedback.status = ?", status)
 	}
 	if category != "" {
-		query = query.Where("category = ?", category)
+		query = query.Where("feedback.category = ?", category)
 	}
 	if keyword != "" {
 		like := "%" + keyword + "%"
 		if id, err := strconv.Atoi(keyword); err == nil {
 			query = query.Where(
-				"id = ? OR user_id = ? OR content LIKE ? OR contact LIKE ? OR page_url LIKE ?",
+				"feedback.id = ? OR feedback.user_id = ? OR feedback.content LIKE ? OR feedback.contact LIKE ? OR feedback.page_url LIKE ?",
 				id, id, like, like, like,
 			)
 		} else {
 			query = query.Where(
-				"content LIKE ? OR contact LIKE ? OR page_url LIKE ? OR user_agent LIKE ?",
+				"feedback.content LIKE ? OR feedback.contact LIKE ? OR feedback.page_url LIKE ? OR feedback.user_agent LIKE ?",
 				like, like, like, like,
 			)
 		}
@@ -118,13 +130,20 @@ func GetAllFeedback(status string, category string, keyword string, startIdx int
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	var feedbacks []*Feedback
+	var feedbacks []*FeedbackWithUser
 	err := query.
-		Order("created_at desc, id desc").
+		Select("feedback.*, users.username AS username, users.email AS email, users.id AS user_id_found").
+		Order("feedback.created_at desc, feedback.id desc").
 		Limit(pageSize).
 		Offset(startIdx).
 		Find(&feedbacks).Error
-	return feedbacks, total, err
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, feedback := range feedbacks {
+		feedback.UserDeleted = feedback.UserIdFound == nil
+	}
+	return feedbacks, total, nil
 }
 
 func GetFeedbackById(id int) (*Feedback, error) {
