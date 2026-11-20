@@ -832,10 +832,12 @@ func newAuditTestDatabase(t *testing.T, kind, dsn string) (*gorm.DB, string) {
 	t.Helper()
 	if kind == "sqlite" {
 		path := t.TempDir() + "/audit.db"
-		// Reuse the production pragmas: WAL keeps readers unlocked, the busy
+		// Reuse the production pragmas: WAL keeps readers unlocked and the busy
 		// timeout serializes concurrent writers instead of failing with
-		// SQLITE_BUSY, and BEGIN IMMEDIATE avoids stale-snapshot write failures.
-		dsn := path + "?_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)&_txlock=immediate"
+		// SQLITE_BUSY. BEGIN IMMEDIATE is deliberately left out: the quota
+		// snapshot test holds a barrier inside the first query of two
+		// transactions, which only both reach with deferred BEGIN.
+		dsn := path + "?_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)"
 		db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 		require.NoError(t, err)
 		t.Cleanup(func() {

@@ -593,11 +593,11 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 **内容**
 
 1. 为 `/api/feedback` 的 4 条路由补上 access-token 规则(session-only):`POST /api/feedback`、`GET /api/feedback`、`GET /api/feedback/list`、`PUT /api/feedback/:id`。反馈路由注册后未同步规则表,`TestAccessTokenRouteRulesCoverEveryDashboardRoute` 报「panel route ... must be declared exactly once」。
-2. `newAuditTestDatabase` 的 SQLite 测试库改用与生产一致的 DSN pragma:`_pragma=busy_timeout(30000)`、`_pragma=journal_mode(WAL)`、`_txlock=immediate`,并在 cleanup 中关闭连接。修复 `TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner` 在 SQLite 下因 `SQLITE_BUSY` 出现 0 个成功者(期望 1 个)的竞态。
+2. `newAuditTestDatabase` 的 SQLite 测试库改用 WAL + 30s busy_timeout 的 DSN,并在 cleanup 中关闭连接。修复 `TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner` 在 SQLite 下因 `SQLITE_BUSY` 出现 0 个成功者(期望 1 个)的竞态。刻意不加 `_txlock=immediate`:生产 DSN 含该项,但 `TestManageUserQuotaConcurrentSnapshots` 在两个事务的首个查询处设了屏障,只有 deferred BEGIN 才能让两个事务都到达屏障,加 immediate 会互斥卡死至超时(run #10 即为此)。
 
 **原因**
 
-CI 测试门禁(run #9)首次真实运行失败:前端 typecheck/test job 通过,后端 vet/build/test job 因上述两个用例失败,构建 job 被门禁跳过。第二个用例是上游既有测试,与反馈功能无关,属于测试库 DSN 未启用 WAL/busy timeout 的老问题。
+CI 测试门禁(run #9)首次真实运行失败:前端 typecheck/test job 通过,后端 vet/build/test job 因上述两个用例失败,构建 job 被门禁跳过。第二个用例是上游既有测试,与反馈功能无关,属于测试库 DSN 未启用 WAL/busy timeout 的老问题。run #10 第一次修复时把测试库 DSN 全量对齐生产(含 `_txlock=immediate`),触发 `TestManageUserQuotaConcurrentSnapshots` 屏障死锁超时,故最终只保留 WAL + busy_timeout。
 
 **影响**
 
@@ -608,10 +608,11 @@ CI 测试门禁(run #9)首次真实运行失败:前端 typecheck/test job 通过
 
 - `go build ./...` 通过。
 - `go test ./router -count=1` 通过。
-- `go test ./controller -run TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner -count=5` 通过(修复前本地每次失败)。
+- `go test ./controller -run TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner -count=20` 通过(修复前本地每次失败)。
+- `go test ./controller -count=1 -skip TestAuditDatabaseMatrix` 通过(157s)。
 - `relaykit`、`tokenkit` 模块全量 `go test ./...` 通过。
 - 本地全量 `go test ./...` 另有 controller `TestAuditDatabaseMatrix/sqlite`(Windows 上 TempDir 删除仍被打开的 audit.db 占用,CI Linux 无此问题)和 service `TestObserveChannelAffinityUsageCacheByRelayFormat_MixedMode`(依赖全局计数、受同包其它用例顺序影响)失败;两者与本次改动无关,单独运行或 CI run #9 均通过。
-- 待重新 push 后由 CI run #10 验证。
+- 待重新 push 后由 CI run #11 验证。
 
 ---
 
