@@ -581,6 +581,40 @@ COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
 
 ---
 
+## 修改 19:CI 测试门禁首跑暴露的两处问题修复
+
+**类型**:修改源码(后端)+ 测试辅助函数
+**日期**:2026-11-20
+**文件**
+
+- `middleware/access_token_routes.go`
+- `controller/access_token_audit_test.go`
+
+**内容**
+
+1. 为 `/api/feedback` 的 4 条路由补上 access-token 规则(session-only):`POST /api/feedback`、`GET /api/feedback`、`GET /api/feedback/list`、`PUT /api/feedback/:id`。反馈路由注册后未同步规则表,`TestAccessTokenRouteRulesCoverEveryDashboardRoute` 报「panel route ... must be declared exactly once」。
+2. `newAuditTestDatabase` 的 SQLite 测试库改用与生产一致的 DSN pragma:`_pragma=busy_timeout(30000)`、`_pragma=journal_mode(WAL)`、`_txlock=immediate`,并在 cleanup 中关闭连接。修复 `TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner` 在 SQLite 下因 `SQLITE_BUSY` 出现 0 个成功者(期望 1 个)的竞态。
+
+**原因**
+
+CI 测试门禁(run #9)首次真实运行失败:前端 typecheck/test job 通过,后端 vet/build/test job 因上述两个用例失败,构建 job 被门禁跳过。第二个用例是上游既有测试,与反馈功能无关,属于测试库 DSN 未启用 WAL/busy timeout 的老问题。
+
+**影响**
+
+- 反馈路由只允许浏览器会话调用,access token 无法提交或管理反馈(与其它交互式面板路由一致)。
+- 测试辅助函数只影响测试;SQLite 测试行为与生产 DSN 保持一致。
+
+**验证**
+
+- `go build ./...` 通过。
+- `go test ./router -count=1` 通过。
+- `go test ./controller -run TestSecurityAccountDeletionConcurrentRequestsHaveOneWinner -count=5` 通过(修复前本地每次失败)。
+- `relaykit`、`tokenkit` 模块全量 `go test ./...` 通过。
+- 本地全量 `go test ./...` 另有 controller `TestAuditDatabaseMatrix/sqlite`(Windows 上 TempDir 删除仍被打开的 audit.db 占用,CI Linux 无此问题)和 service `TestObserveChannelAffinityUsageCacheByRelayFormat_MixedMode`(依赖全局计数、受同包其它用例顺序影响)失败;两者与本次改动无关,单独运行或 CI run #9 均通过。
+- 待重新 push 后由 CI run #10 验证。
+
+---
+
 ## 新增的本地部署文件
 
 以下文件为本 fork 新增,不属于上游:
@@ -644,6 +678,7 @@ REGISTRY=<registry地址> NAMESPACE=<命名空间> ./build-image.sh --push
 | 2026-10-31 | `v1.0.0-rc.43+ce99081` | 修改 12;CI run #6 构建成功 |
 | 2026-11-02 | `v1.0.0-rc.43+c438989` | 修改 13、14;CI run #7 构建成功(`4341d92` 无单独运行) |
 | 2026-11-07 | `v1.0.0-rc.43+bbd9a0f` | 修改 15;CI run #8 构建成功;当前线上版本,容器 healthy |
-| 2026-11-09 | 待构建 | 修改 16;CI 测试门禁,尚未 push,首次运行待验证 |
-| 2026-11-19 | 待构建 | 修改 17;站内用户反馈(用户入口 + 后台管理),尚未 push |
-| 2026-11-20 | 待构建 | 修改 18;后台反馈列表/详情显示用户身份,尚未 push |
+| 2026-11-09 | 待构建 | 修改 16;CI 测试门禁,首次真实运行 run #9 门禁失败(见修改 19) |
+| 2026-11-19 | 待构建 | 修改 17;站内用户反馈(用户入口 + 后台管理),随 `a905274` 推送 |
+| 2026-11-20 | 待构建 | 修改 18;后台反馈列表/详情显示用户身份,随 `a905274` 推送 |
+| 2026-11-20 | 待构建 | 修改 19;修复 run #9 暴露的路由规则与测试库 DSN 问题,待重新推送 |

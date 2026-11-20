@@ -122,6 +122,13 @@ var accessTokenRouteRules = map[string]accessTokenRouteRule{
 	"GET /api/user/2fa/stats":                          accessTokenScopeRule("user:read"),
 	"DELETE /api/user/:id/2fa":                         accessTokenScopeRule("user:write"),
 
+	// router/api-router.go: /api/feedback (session only: submitting and reviewing
+	// feedback is an interactive dashboard action, never an access-token scope).
+	"POST /api/feedback":     accessTokenSessionRule,
+	"GET /api/feedback":      accessTokenSessionRule,
+	"GET /api/feedback/list": accessTokenSessionRule,
+	"PUT /api/feedback/:id":  accessTokenSessionRule,
+
 	// router/api-router.go: /api/subscription
 	"GET /api/subscription/plans":                                    accessTokenScopeRule("wallet:read"),
 	"GET /api/subscription/self":                                     accessTokenScopeRule("wallet:read"),
